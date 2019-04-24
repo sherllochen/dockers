@@ -1,0 +1,17 @@
+output:
+#----------------------------- Logstash output --------------------------------
+  logstash:
+    enabled: true
+    hosts:
+    # change to logstash host and port
+      - host.docker.internal:5044
+    timeout: 15
+    # ssl:
+      # certificate_authorities:
+      # - /etc/pki/tls/certs/logstash-beats.crt
+
+filebeat:
+  inputs:
+    - type: log
+      paths:
+        - /usr/share/filebeat/hostlogs/*.log

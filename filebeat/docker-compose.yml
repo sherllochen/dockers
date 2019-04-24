@@ -1,0 +1,14 @@
+version: "3.5"
+services:
+  filebeat:
+    hostname: filebeat
+    image: sherllo/filebeat:7.0.0
+    volumes:
+# needed to persist filebeat tracking data :
+     - "filebeat_data:/usr/share/filebeat/data:rw"
+# needed to access all host logs (read only) :
+     - "/Users/neversion/dev/ats/log:/usr/share/filebeat/hostlogs:ro"
+
+volumes:
+# create a persistent volume for Filebeat
+  filebeat_data:
