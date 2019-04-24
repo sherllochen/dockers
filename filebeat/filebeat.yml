@@ -15,3 +15,5 @@ filebeat:
     - type: log
       paths:
         - /usr/share/filebeat/hostlogs/*.log
+      # use this tag to distinct with logs from different server
+      tags: ["hostname_appname_log"]
