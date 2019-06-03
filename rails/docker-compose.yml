@@ -1,0 +1,97 @@
+# docker-compose.yml
+version: '2.1'
+
+services:
+  app: &app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes: [".:/app"] # mount current directory into the image
+
+    # use tmpfs for tmp and log for performance and to allow
+    # multiple builds in parallel. Both directories are mounted
+    # into the image AFTER the working directory is mounted.
+    tmpfs: ["/app/tmp", "/app/log"]
+
+  dev: &dev
+    <<: *app
+    environment:
+      RAILS_ENV: "development"
+      DATABASE_URL: "mysql2://mysql/shapp?local_infile=true"
+      # ELASTIC_SEARCH_URL: http://elasticsearch:9200
+      REDIS_URL: "redis://redis"
+    depends_on:
+      mysql: {"condition":"service_healthy"}
+      redis: {"condition":"service_healthy"}
+      # elasticsearch: {"condition":"service_healthy"}
+
+  # server:
+  #   <<: *dev
+  #    command: ["bundle", "exec", "./build/validate-migrated.sh && rails server -b 0.0.0.0"]
+  #    ports: ["3000:3000"]
+
+  test: &test
+    <<: *app
+
+    environment:
+      RAILS_ENV: "test"
+      DATABASE_URL: "mysql2://mysql-test/phraseapp?local_infile=true"
+      # ELASTIC_SEARCH_URL: http://elasticsearch-test:9200
+      REDIS_URL: "redis://redis-test"
+      SPRING_TMP_PATH: "/app/tmp"
+
+    # wait for all dependent services to be healthy
+    depends_on:
+      mysql-test: {"condition":"service_healthy"}
+      redis-test: {"condition":"service_healthy"}
+      # elasticsearch-test: {"condition":"service_healthy"}
+
+  # allow executing of single tests against a running spring server
+  spring:
+    <<: *test
+    command: ["bundle", "exec", "./build/validate-migrated.sh && spring server"]
+
+
+  # elasticsearch: &elasticsearch
+  #   image: elasticsearch:1.7.6
+  #   ports: ["9200"]
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-SsfL", "127.0.0.1:9200/_status"]
+  #     interval: 1s
+  #     timeout: 1s
+  #     retries: 300
+
+  # elasticsearch-test:
+  #   <<: *elasticsearch
+  #   # place elasticsearch data on tmpfs for performance
+  #   tmpfs: /usr/share/elasticsearch/data
+
+  redis: &redis
+    image: redis:2.8.23
+    ports: ["6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 1s
+      retries: 300
+
+  redis-test:
+    <<: *redis
+
+  mysql: &mysql
+    image: mysql:5.7.16
+    ports: ["3306"]
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+      # replace to another database name for every application
+      MYSQL_DATABASE: "phraseapp"
+
+    healthcheck:
+      test: ["CMD", "mysql", "-u", "root", "-e", "select 1"]
+      interval: 1s
+      timeout: 1s
+      retries: 300
+
+  mysql-test:
+    <<: *mysql
+    tmpfs: /var/lib/mysql # place mysql on tmpfs for performance
