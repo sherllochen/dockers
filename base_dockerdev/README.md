@@ -9,7 +9,7 @@
 - Yarn
 
 ## Usage
-1. copy .dockerdev to app root directory.
+1. copy all files in base_dockerdev to app root directory.
 2. change args for dependency version in docker-compose.yml if need. 
 2. execute for first time of dockerfile changed
 
