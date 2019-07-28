@@ -63,3 +63,15 @@ RUN gem sources --add https://gems.ruby-china.com/ --remove https://rubygems.com
 ARG RAILS_VERSION
 RUN gem install rails -v $RAILS_VERSION
 RUN bundle config mirror.https://rubygems.org https://gems.ruby-china.com
+
+# for gems
+COPY Gemfile Gemfile.lock /app/
+RUN bundle install  -j $(nproc)
+
+COPY package.json yarn.lock /app/
+RUN yarn install --no-bin-links
+
+# copy app files
+COPY . /app/
+
+EXPOSE 3000
