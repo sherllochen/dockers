@@ -1,1 +1,7 @@
 /elk/elsticsearch_data
+log/
+.DS_Store
+.idea/
+node_modules/
+public/packs/
+tmp/
