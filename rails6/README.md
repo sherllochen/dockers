@@ -22,3 +22,11 @@ docker-compose build
 ```bash
 docker-compose up runner
 ```
+
+5. attach to container
+```bash
+docker container ls 
+docker exec -it container_id_xxxx /bin/bash
+```
+
+6.  navigate to / directory and use /app as app root directory
