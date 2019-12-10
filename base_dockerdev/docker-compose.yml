@@ -7,11 +7,13 @@ services:
       dockerfile: ./.dockerdev/Dockerfile
       args:
         RUBY_VERSION: '2.6.3'
+        RAILS_VERSION: '5.2.0'
         PG_MAJOR: '11'
         NODE_MAJOR: '11'
         YARN_VERSION: '1.13.0'
         BUNDLER_VERSION: '2.0.2'
-    image: base-dev:1.0.0
+        WORKDIR: '/app'
+    image: sherllo/rails:1.0.0
     tmpfs:
       - /tmp
 
@@ -22,7 +24,7 @@ services:
     volumes:
       - .:/app:cached
       - rails_cache:/app/tmp/cache
-      - bundle:/bundle
+      - bundle:/app/bundle
       - node_modules:/app/node_modules
       - packs:/app/public/packs
       - .dockerdev/.psqlrc:/root/.psqlrc:ro
@@ -30,17 +32,23 @@ services:
       - NODE_ENV=development
       - RAILS_ENV=${RAILS_ENV:-development}
       - REDIS_URL=redis://redis:6379/
-      - DATABASE_URL=postgres://postgres:postgres@postgres:5432
+      #      comment out when not using postgres
+      #      - DATABASE_URL=postgres://postgres:postgres@postgres:5432
       - BOOTSNAP_CACHE_DIR=/bundle/bootsnap
       - WEBPACKER_DEV_SERVER_HOST=webpacker
       - WEB_CONCURRENCY=1
       - HISTFILE=/app/log/.bash_history
-      - PSQL_HISTFILE=/app/log/.psql_history
+      #      comment out when not using postgres
+      #      - PSQL_HISTFILE=/app/log/.psql_history
       - EDITOR=vi
     depends_on:
-      - postgres
+      # comment out when not using MySQL
+      - mysql
+      # comment out when not using postgres
+      #- postgres
       - redis
 
+  # docker-compose run --service-ports runner
   runner:
     <<: *backend
     command: /bin/bash
@@ -48,6 +56,7 @@ services:
       - '3000:3000'
       - '3002:3002'
 
+  # docker-compose run --service-ports rails
   rails:
     <<: *backend
     command: bundle exec rails server -b 0.0.0.0
@@ -69,6 +78,24 @@ services:
     ports:
       - 5432
 
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'user'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: 'password'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - mysql-db:/var/lib/mysql
+
   redis:
     image: redis:3.2-alpine
     volumes:
@@ -76,6 +103,7 @@ services:
     ports:
       - 6379
 
+  # docker-compose run --service-ports webpacker
   webpacker:
     <<: *app
     command: ./bin/webpack-dev-server
@@ -83,7 +111,7 @@ services:
       - '3035:3035'
     volumes:
       - .:/app:cached
-      - bundle:/bundle
+      - bundle:/app/bundle
       - node_modules:/app/node_modules
       - packs:/app/public/packs
     environment:
@@ -92,6 +120,7 @@ services:
       - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
 
 volumes:
+  mysql-db:
   postgres:
   redis:
   bundle:

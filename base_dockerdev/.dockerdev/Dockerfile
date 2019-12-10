@@ -1,12 +1,13 @@
 ARG RUBY_VERSION
 FROM ruby:$RUBY_VERSION
-
-ARG PG_MAJOR
+ARG RAILS_VERSION
+ARG PG_MAJOR=11
 ARG NODE_MAJOR
 ARG BUNDLER_VERSION
 ARG YARN_VERSION
+ARG WORKDIR
 
-# Change source to aliyun
+# Change source to aliyun, can remove if you want
 RUN mv /etc/apt/sources.list /etc/apt/sources.list.orig \
 && echo "deb http://mirrors.aliyun.com/debian buster main contrib non-free" >> /etc/apt/sources.list \
 && echo "deb http://mirrors.aliyun.com/debian buster-proposed-updates main contrib non-free" >> /etc/apt/sources.list \
@@ -30,6 +31,7 @@ RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrad
   DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
     build-essential \
     postgresql-client-$PG_MAJOR \
+    default-mysql-client default-libmysqlclient-dev \
     nodejs \
     yarn=$YARN_VERSION-1 \
     $(cat /tmp/Aptfile | xargs) && \
@@ -37,29 +39,35 @@ RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrad
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     truncate -s 0 /var/log/*log
 
+# Create a directory for the app code
+RUN mkdir -p $WORKDIR
+WORKDIR $WORKDIR
+
 # Configure bundler and PATH
 ENV LANG=C.UTF-8 \
-  GEM_HOME=/bundle \
+  GEM_HOME=$WORKDIR/bundle \
   BUNDLE_JOBS=4 \
   BUNDLE_RETRY=3
 ENV BUNDLE_PATH $GEM_HOME
 ENV BUNDLE_APP_CONFIG=$BUNDLE_PATH \
   BUNDLE_BIN=$BUNDLE_PATH/bin
-ENV PATH /app/bin:$BUNDLE_BIN:$PATH
+ENV PATH $WORKDIR/bin:$BUNDLE_BIN:$PATH
 
-# Upgrade RubyGems and install required Bundler version 
+# Upgrade RubyGems and install required Bundler version
 RUN gem update --system && \
     gem install bundler:$BUNDLER_VERSION
 
-# Create a directory for the app code
-RUN mkdir -p /app
-
-WORKDIR /app
-
-# Config mirror for chinese developer
+# Config mirror for chinese developer, can remove if you want
 RUN npm config set registry https://registry.npm.taobao.org
 RUN gem sources --add https://gems.ruby-china.com/ --remove https://rubygems.com/
 
-ARG RAILS_VERSION
 RUN gem install rails -v $RAILS_VERSION
+# Config mirror for chinese developer, can remove if you want
 RUN bundle config mirror.https://rubygems.org https://gems.ruby-china.com
+
+# for gems
+COPY Gemfile Gemfile.lock $WORKDIR/
+RUN bundle install  -j $(nproc)
+
+COPY package.json yarn.lock $WORKDIR/
+RUN yarn install --no-bin-links
