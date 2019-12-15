@@ -47,6 +47,16 @@ services:
       # comment out when not using postgres
       #- postgres
       - redis
+      - webpacker
+      - nginx
+
+  nginx:
+    build:
+      context: .
+      dockerfile: .dockerdev/nginx/Dockerfile
+    image: sherllo/nginx:1.0.0
+    stdin_open: true
+    tty: true
 
   # docker-compose run --service-ports runner
   runner:

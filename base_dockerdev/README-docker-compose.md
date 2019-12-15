@@ -23,6 +23,13 @@ docker-compose build
 
 5. Run specific service as you want
 
+## TIPS
+1. Once something in Dockerfile change, such as Gemfile, you need to rebuild the container.
+```bash
+docker-compose down
+docker-compose up --build #rebuild
+```
+
 ## Command for services
 ### For bash debug
 
@@ -35,4 +42,9 @@ docker-compose run --service-ports runner
 2. run service
 ```
 docker-compose run --service-ports rails
+```
+
+### Run command in running service with not root user 
+```bash
+docker-compose exec --user $(id -u):$(id -g) service-name /bin/bash
 ```
