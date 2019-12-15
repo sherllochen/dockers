@@ -1,5 +1,5 @@
 ARG RUBY_VERSION
-FROM ruby:2.6.3
+FROM ruby:$RUBY_VERSION
 
 # Change source to aliyun, can remove if you want
 RUN mv /etc/apt/sources.list /etc/apt/sources.list.orig \
@@ -18,4 +18,4 @@ COPY ./mod-http-passenger.conf /etc/nginx/conf.d/mod-http-passenger.conf
 RUN mv /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/default.bk
 COPY ./app_config /etc/nginx/sites-enabled/default
 
-CMD /bin/bash
+CMD ["service" ,"nginx", "start"]
