@@ -18,4 +18,11 @@ COPY ./mod-http-passenger.conf /etc/nginx/conf.d/mod-http-passenger.conf
 RUN mv /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/default.bk
 COPY ./app_config /etc/nginx/sites-enabled/default
 
-CMD ["service" ,"nginx", "start"]
+RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -yq ssh
+
+COPY cmd.sh cmd.sh
+RUN chmod +x cmd.sh
+
+RUN useradd -rm -d /home/deploy -s /bin/bash -g root -G sudo -u 1000 deploy -p "$(openssl passwd -1 deploy)"
+
+CMD ./cmd.sh

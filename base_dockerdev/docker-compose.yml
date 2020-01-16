@@ -55,8 +55,12 @@ services:
       context: .
       dockerfile: .dockerdev/nginx/Dockerfile
     image: sherllo/nginx:1.0.0
+    volumes:
+      - .:/app:cached
     stdin_open: true
     tty: true
+    ports:
+      - '80:80'
 
   # docker-compose run --service-ports runner
   runner:
