@@ -1,7 +1,7 @@
 ## How to use
-1. Allow income ports: 9200(for Elasticsearch)/5044(for Logstash)/5601(for Kibana)
-2. Install docker and docker compose. [offical docs](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
-3. Test the installation, command below must return specific version info of docker compose.Such as "docker-compose version 1.25.3, build 1110ad01"
+1. Allow income ports: 5601(for Kibana)/5044(for Logstash,recommend only open to specific ip).
+2. Install docker and docker compose. [offical docs](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
+3. Test the installation, command below must return specific version info of docker compose.Such as "docker-compose version 1.25.3, build 1110ad01".
 
 ```bash
 docker-compose --version 
