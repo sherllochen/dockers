@@ -32,14 +32,14 @@ services:
       - NODE_ENV=development
       - RAILS_ENV=${RAILS_ENV:-development}
       - REDIS_URL=redis://redis:6379/
-      #      comment out when not using postgres
-      #      - DATABASE_URL=postgres://postgres:postgres@postgres:5432
+      # comment out when not using postgres
+      # - DATABASE_URL=postgres://postgres:postgres@postgres:5432
       - BOOTSNAP_CACHE_DIR=/bundle/bootsnap
       - WEBPACKER_DEV_SERVER_HOST=webpacker
       - WEB_CONCURRENCY=1
       - HISTFILE=/app/log/.bash_history
-      #      comment out when not using postgres
-      #      - PSQL_HISTFILE=/app/log/.psql_history
+      # comment out when not using postgres
+      # - PSQL_HISTFILE=/app/log/.psql_history
       - EDITOR=vi
     depends_on:
       # comment out when not using MySQL
@@ -48,19 +48,30 @@ services:
       #- postgres
       - redis
       - webpacker
-      - nginx
 
-  nginx:
+  # docker-compose run --service-ports runner
+  # ready for deploying using Capistrano
+  # deploy user is 'deploy' and password is 'deploy'. Can be changed in Dockerfile
+  # app path is '/home/deploy/app'
+  production:
     build:
       context: .
       dockerfile: .dockerdev/nginx/Dockerfile
     image: sherllo/nginx:1.0.0
-    volumes:
-      - .:/app:cached
     stdin_open: true
     tty: true
     ports:
+      # for web
       - '80:80'
+      # for deploy through ssh using Capistrano
+      - '22:22'
+    depends_on:
+      # comment out when not using MySQL
+      - mysql
+      # comment out when not using postgres
+      #- postgres
+      - redis
+      - webpacker
 
   # docker-compose run --service-ports runner
   runner:
