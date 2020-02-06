@@ -17,3 +17,5 @@ deploy:
   on:
     branch: hexo-source
   local-dir: public
+notifications:
+  slack: slack-id

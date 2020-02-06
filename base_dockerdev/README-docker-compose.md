@@ -30,7 +30,7 @@ Rails service will be exposed in 3000.
 1. Run service
 
 ```bash
-docker-compose run --service-ports rails
+docker-compose run --service-ports dev
 ```
 
 2. Db setup
@@ -79,7 +79,7 @@ docker-compose up --build #rebuild
 ### For bash debug
 
 ```bash
-docker-compose run --service-ports runner
+docker-compose run --service-ports debug
 ```
 
 ### Run command in running service with not root user 

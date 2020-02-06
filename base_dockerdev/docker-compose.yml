@@ -48,12 +48,9 @@ services:
       #- postgres
       - redis
       - webpacker
+      - nginx
 
-  # docker-compose run --service-ports runner
-  # ready for deploying using Capistrano
-  # deploy user is 'deploy' and password is 'deploy'. Can be changed in Dockerfile
-  # app path is '/home/deploy/app'
-  production:
+  nginx:
     build:
       context: .
       dockerfile: .dockerdev/nginx/Dockerfile
@@ -65,21 +62,29 @@ services:
       - '80:80'
       # for deploy through ssh using Capistrano
       - '22:22'
-    depends_on:
-      # comment out when not using MySQL
-      - mysql
-      # comment out when not using postgres
-      #- postgres
-      - redis
-      - webpacker
+#    depends_on:
+#      # comment out when not using MySQL
+#      - mysql
+#      # comment out when not using postgres
+#      #- postgres
+#      - redis
+#      - webpacker
 
-  # docker-compose run --service-ports runner
-  runner:
+  # docker-compose run --service-ports debug
+  debug:
     <<: *backend
     command: /bin/bash
     ports:
       - '3000:3000'
       - '3002:3002'
+
+  # docker-compose run --service-ports production
+  # ready for deploying using Capistrano
+  # deploy user is 'deploy' and password is 'deploy'. Can be changed in Dockerfile
+  # app path is '/home/deploy/app'
+  production:
+    <<: *backend
+    command: /bin/bash
 
   # docker-compose run --service-ports rails
   rails:

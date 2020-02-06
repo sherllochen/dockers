@@ -1,6 +1,7 @@
 version: "3.5"
 services:
   filebeat:
+    build: .
     hostname: filebeat
     image: sherllo/filebeat:7.0.0
     volumes:
