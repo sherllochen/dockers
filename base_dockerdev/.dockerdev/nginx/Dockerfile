@@ -25,4 +25,7 @@ RUN chmod +x cmd.sh
 
 RUN useradd -rm -d /home/deploy -s /bin/bash -g root -G sudo -u 1000 deploy -p "$(openssl passwd -1 deploy)"
 
+# Config mirror for chinese developer, can remove if you want
+RUN bundle config mirror.https://rubygems.org https://gems.ruby-china.com
+
 CMD ./cmd.sh

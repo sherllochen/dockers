@@ -4,7 +4,7 @@ services:
   app: &app
     build:
       context: .
-      dockerfile: ./.dockerdev/Dockerfile
+      dockerfile: ./.dockerdev/rails/Dockerfile
       args:
         RUBY_VERSION: '2.6.3'
         RAILS_VERSION: '5.2.0'
@@ -54,6 +54,8 @@ services:
     build:
       context: .
       dockerfile: .dockerdev/nginx/Dockerfile
+      args:
+        RUBY_VERSION: '2.6.3'
     image: sherllo/nginx:1.0.0
     stdin_open: true
     tty: true
