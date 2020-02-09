@@ -1,97 +1,161 @@
-# docker-compose.yml
-version: '2.1'
+version: '3.4'
 
 services:
   app: &app
     build:
       context: .
-      dockerfile: Dockerfile
-    volumes: [".:/app"] # mount current directory into the image
+      dockerfile: ./.dockerdev/rails/Dockerfile
+      args:
+        RUBY_VERSION: '2.6.3'
+        RAILS_VERSION: '5.2.0'
+        PG_MAJOR: '11'
+        NODE_MAJOR: '11'
+        YARN_VERSION: '1.13.0'
+        BUNDLER_VERSION: '2.0.2'
+        WORKDIR: '/app'
+    image: sherllo/rails:1.0.0
+    tmpfs:
+      - /tmp
 
-    # use tmpfs for tmp and log for performance and to allow
-    # multiple builds in parallel. Both directories are mounted
-    # into the image AFTER the working directory is mounted.
-    tmpfs: ["/app/tmp", "/app/log"]
-
-  dev: &dev
+  backend: &backend
     <<: *app
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/app:cached
+      - rails_cache:/app/tmp/cache
+      - bundle:/app/bundle
+      - node_modules:/app/node_modules
+      - packs:/app/public/packs
+      - .dockerdev/.psqlrc:/root/.psqlrc:ro
     environment:
-      RAILS_ENV: "development"
-      DATABASE_URL: "mysql2://mysql/shapp?local_infile=true"
-      # ELASTIC_SEARCH_URL: http://elasticsearch:9200
-      REDIS_URL: "redis://redis"
+      - NODE_ENV=development
+      - RAILS_ENV=${RAILS_ENV:-development}
+      - REDIS_URL=redis://redis:6379/
+      # comment out when not using postgres
+      # - DATABASE_URL=postgres://postgres:postgres@postgres:5432
+      - BOOTSNAP_CACHE_DIR=/bundle/bootsnap
+      - WEBPACKER_DEV_SERVER_HOST=webpacker
+      - WEB_CONCURRENCY=1
+      - HISTFILE=/app/log/.bash_history
+      # comment out when not using postgres
+      # - PSQL_HISTFILE=/app/log/.psql_history
+      - EDITOR=vi
     depends_on:
-      mysql: {"condition":"service_healthy"}
-      redis: {"condition":"service_healthy"}
-      # elasticsearch: {"condition":"service_healthy"}
+      # comment out when not using MySQL
+      - mysql
+      # comment out when not using postgres
+      #- postgres
+      - redis
+      - webpacker
+      - nginx
 
-  # server:
-  #   <<: *dev
-  #    command: ["bundle", "exec", "./build/validate-migrated.sh && rails server -b 0.0.0.0"]
-  #    ports: ["3000:3000"]
+  nginx:
+    build:
+      context: .
+      dockerfile: .dockerdev/nginx/Dockerfile
+      args:
+        RUBY_VERSION: '2.6.3'
+    image: sherllo/nginx:1.0.0
+    stdin_open: true
+    tty: true
+    ports:
+      # for web
+      - '80:80'
+      # for deploy through ssh using Capistrano
+      - '22:22'
+#    depends_on:
+#      # comment out when not using MySQL
+#      - mysql
+#      # comment out when not using postgres
+#      #- postgres
+#      - redis
+#      - webpacker
 
-  test: &test
+  # docker-compose run --service-ports debug
+  debug:
+    <<: *backend
+    command: /bin/bash
+    ports:
+      - '3000:3000'
+      - '3002:3002'
+
+  # docker-compose run --service-ports production
+  # ready for deploying using Capistrano
+  # deploy user is 'deploy' and password is 'deploy'. Can be changed in Dockerfile
+  # app path is '/home/deploy/app'
+  production:
+    <<: *backend
+    command: /bin/bash
+
+  # docker-compose run --service-ports rails
+  dev:
+    <<: *backend
+    command: bundle exec rails server -b 0.0.0.0
+    ports:
+      - '3000:3000'
+
+  sidekiq:
+    <<: *backend
+    command: bundle exec sidekiq -C config/sidekiq.yml
+
+  postgres:
+    image: postgres:11.1
+    volumes:
+      - .psqlrc:/root/.psqlrc:ro
+      - postgres:/var/lib/postgresql/data
+      - ./log:/root/log:cached
+    environment:
+      - PSQL_HISTFILE=/root/log/.psql_history
+    ports:
+      - 5432
+
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'user'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: 'password'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - mysql-db:/var/lib/mysql
+
+  redis:
+    image: redis:3.2-alpine
+    volumes:
+      - redis:/data
+    ports:
+      - 6379
+
+  # docker-compose run --service-ports webpacker
+  webpacker:
     <<: *app
-
+    command: ./bin/webpack-dev-server
+    ports:
+      - '3035:3035'
+    volumes:
+      - .:/app:cached
+      - bundle:/app/bundle
+      - node_modules:/app/node_modules
+      - packs:/app/public/packs
     environment:
-      RAILS_ENV: "test"
-      DATABASE_URL: "mysql2://mysql-test/phraseapp?local_infile=true"
-      # ELASTIC_SEARCH_URL: http://elasticsearch-test:9200
-      REDIS_URL: "redis://redis-test"
-      SPRING_TMP_PATH: "/app/tmp"
+      - NODE_ENV=${NODE_ENV:-development}
+      - RAILS_ENV=${RAILS_ENV:-development}
+      - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
 
-    # wait for all dependent services to be healthy
-    depends_on:
-      mysql-test: {"condition":"service_healthy"}
-      redis-test: {"condition":"service_healthy"}
-      # elasticsearch-test: {"condition":"service_healthy"}
-
-  # allow executing of single tests against a running spring server
-  spring:
-    <<: *test
-    command: ["bundle", "exec", "./build/validate-migrated.sh && spring server"]
-
-
-  # elasticsearch: &elasticsearch
-  #   image: elasticsearch:1.7.6
-  #   ports: ["9200"]
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-SsfL", "127.0.0.1:9200/_status"]
-  #     interval: 1s
-  #     timeout: 1s
-  #     retries: 300
-
-  # elasticsearch-test:
-  #   <<: *elasticsearch
-  #   # place elasticsearch data on tmpfs for performance
-  #   tmpfs: /usr/share/elasticsearch/data
-
-  redis: &redis
-    image: redis:2.8.23
-    ports: ["6379"]
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 1s
-      timeout: 1s
-      retries: 300
-
-  redis-test:
-    <<: *redis
-
-  mysql: &mysql
-    image: mysql:5.7.16
-    ports: ["3306"]
-    environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
-      # replace to another database name for every application
-      MYSQL_DATABASE: "phraseapp"
-
-    healthcheck:
-      test: ["CMD", "mysql", "-u", "root", "-e", "select 1"]
-      interval: 1s
-      timeout: 1s
-      retries: 300
-
-  mysql-test:
-    <<: *mysql
-    tmpfs: /var/lib/mysql # place mysql on tmpfs for performance
+volumes:
+  mysql-db:
+  postgres:
+  redis:
+  bundle:
+  node_modules:
+  rails_cache:
+  packs:
