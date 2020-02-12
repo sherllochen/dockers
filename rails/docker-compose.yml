@@ -56,6 +56,10 @@ services:
       dockerfile: .dockerdev/nginx/Dockerfile
       args:
         RUBY_VERSION: '2.6.3'
+        NODE_MAJOR: '11'
+        YARN_VERSION: '1.13.0'
+        BUNDLER_VERSION: '2.0.2'
+        WORKDIR: '/app'
     image: sherllo/nginx:1.0.0
     stdin_open: true
     tty: true
