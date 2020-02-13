@@ -11,20 +11,6 @@
 - Yarn
 - Nginx
 
-## Base setup
-1. Copy all files in base_dockerdev to app root directory.
-2. Change args for dependency version in docker-compose.yml if need.
-3. Default db dependency is Postgres, can be change to MySQL. The MySQL service has been included. 
-4. Any volumes would be mounted in container must be created.
-5. Execute for first time of dockerfile changed
-6. Database name, username and password is definded in docker-compose.yml. The config in config/database.yml must be the same.
-
-```bash
-sudo docker-compose build
-```
-
-5. Run specific service as you want
-
 ## For running development
 1. Copy all files in base_dockerdev to app root directory.
 2. Change args for dependency version in docker-compose.yml if need.
@@ -54,10 +40,6 @@ bundle exec rake db:seed_fu
 ```
 
 ## For production
-### Need to know for local development machine
-1. As default, port 8888 will be exposed for deploying using Capistrano through ssh. 
-
-### Steps
 1. Sever SSH port for deploying. Default port is 8888. If need to change, there are 3 places need to change. And the specific port must be open in server firewall.
 ```
 # edit .dockerdev/nginx/sshd_config
@@ -81,18 +63,27 @@ RUN useradd -rm -d /home/deploy -s /bin/bash -g root -G sudo -u 1000 deploy_user
 4. Default db dependency is MySQL, can be change to Postgres. The Postgres service has been included. 
 5. Any volumes would be mounted in container must be created.
 6. Database name, username and password is defined in docker-compose.yml. The config in config/database.yml must be the same.
-7. Execute for first time or whenever dockerfile changed
+7. Comment out lines from 69-73 of .dockerdev/rails/Dockerfile.
+```
+# edit .dockerdev/rails/Dockerfile
+#COPY Gemfile Gemfile.lock $WORKDIR/
+#RUN bundle install  -j $(nproc)
+
+#COPY package.json yarn.lock $WORKDIR/
+#RUN yarn install --no-bin-links
+```
+8. Execute for first time or whenever dockerfile changed
 ```bash
 sudo docker-compose build
 ```
-8. Get to run.
+9. Get to run.
 ```bash
 # run service in server
 sudo docker-compose run --service-ports production
 # run deploy command in local machine.
 cap production deploy
 ```
-9. Connect to server, setup db for the first time.
+10. Connect to server, setup db for the first time.
 ```bash
 # get dev container id, its container name is just list xxx_dev_run_xxx
 sudo docker-compose container ps
