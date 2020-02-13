@@ -68,6 +68,9 @@ COPY .dockerdev/nginx/app_config /etc/nginx/sites-enabled/default
 # Create deploy user
 RUN useradd -rm -d /home/deploy -s /bin/bash -g root -G sudo -u 1000 deploy -p "$(openssl passwd -1 deploy)"
 
+# Override sshd_config
+COPY .dockerdev/nginx/sshd_config /etc/ssh/sshd_config
+
 # Start ssh and nginx service
 COPY .dockerdev/nginx/cmd.sh cmd.sh
 RUN chmod +x cmd.sh

@@ -66,8 +66,8 @@ services:
     ports:
       # for web
       - '80:80'
-      # for deploy through ssh using Capistrano
-      - '22:22'
+      # for deploy through ssh using Capistrano, must be same with port config in sshd_config
+      - '8888:8888'
 #    depends_on:
 #      # comment out when not using MySQL
 #      - mysql
