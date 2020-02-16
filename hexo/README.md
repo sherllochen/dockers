@@ -1,6 +1,6 @@
 ## Build
 ```
-docker build -t sherllo/hexo-client .
+docker build -t sherllo/hexo .
 ```
 
 ## Run container
