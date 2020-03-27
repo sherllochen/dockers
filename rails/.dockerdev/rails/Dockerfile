@@ -3,7 +3,6 @@ FROM ruby:$RUBY_VERSION
 ARG RAILS_VERSION
 ARG PG_MAJOR=11
 ARG NODE_MAJOR
-ARG BUNDLER_VERSION
 ARG YARN_VERSION
 ARG WORKDIR
 
@@ -57,7 +56,7 @@ ENV PATH $WORKDIR/bin:$BUNDLE_BIN:$PATH
 
 # Upgrade RubyGems and install required Bundler version
 RUN gem update --system && \
-    gem install bundler:$BUNDLER_VERSION
+    gem install bundler
 
 # Config mirror for chinese developer, can remove if you want
 RUN npm config set registry https://registry.npm.taobao.org

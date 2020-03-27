@@ -116,6 +116,9 @@ sudo docker-compose down
 sudo docker-compose up --build #rebuild
 ```
 
+2. Because the base os image of ruby image is not buster, comment out these lines will help.
+W: GPG error: http://mirrors.aliyun.com buster InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 04EE7237B7D453EC NO_PUBKEY 648ACFD622F3D138 NO_PUBKEY DCC9EFBF77E11517
+
 ## Command for other services
 ### For bash debug
 
