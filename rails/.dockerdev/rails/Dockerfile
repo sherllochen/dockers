@@ -33,7 +33,7 @@ RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrad
     build-essential \
     postgresql-client-$PG_MAJOR \
     default-mysql-client default-libmysqlclient-dev \
-    nodejs \
+    nodejs sudo\
     yarn=$YARN_VERSION-1 \
     $(cat /tmp/Aptfile | xargs) && \
     apt-get clean && \
@@ -60,7 +60,7 @@ RUN gem update --system && \
 
 # Config mirror for chinese developer, can remove if you want
 RUN npm config set registry https://registry.npm.taobao.org
-RUN gem sources --add https://gems.ruby-china.com/ --remove https://rubygems.com/
+RUN gem sources --add https://gems.ruby-china.com/ --remove https://rubygems.org/
 
 RUN gem install rails -v $RAILS_VERSION
 # Config mirror for chinese developer, can remove if you want
@@ -72,3 +72,7 @@ RUN bundle install  -j $(nproc)
 
 COPY package.json yarn.lock $WORKDIR/
 RUN yarn install --no-bin-links
+
+# If want to use no-root user, then create deploy user and user it
+#RUN useradd -rm -d /home/deploy -s /bin/bash -g root -G sudo -u 1000 deploy -p "$(openssl passwd -1 deploy)"
+#USER deploy
