@@ -6,10 +6,10 @@ services:
       context: .
       dockerfile: ./.dockerdev/rails/Dockerfile
       args:
-        RUBY_VERSION: '2.6.3'
+        RUBY_VERSION: '2.6.6'
         RAILS_VERSION: '5.2.0'
         PG_MAJOR: '11'
-        NODE_MAJOR: '11'
+        NODE_MAJOR: '12'
         YARN_VERSION: '1.13.0'
         BUNDLER_VERSION: '2.0.2'
         WORKDIR: '/app'
