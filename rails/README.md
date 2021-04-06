@@ -119,6 +119,14 @@ sudo docker-compose up --build #rebuild
 2. Because the base os image of ruby image is not buster, comment out these lines will help.
 W: GPG error: http://mirrors.aliyun.com buster InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 04EE7237B7D453EC NO_PUBKEY 648ACFD622F3D138 NO_PUBKEY DCC9EFBF77E11517
 
+3. If change the args in docker-compose.yml, you may face some errors, recommend to delete yarn.lock and Gemfile.lock and edit Dockerfile about these files. Such as:
+```
+FROM: COPY Gemfile Gemfile.lock $WORKDIR/
+TO: COPY Gemfile $WORKDIR/
+FROM: COPY package.json yarn.lock $WORKDIR/
+TP: COPY package.json $WORKDIR/
+``` 
+
 ## Command for other services
 ### For bash debug
 
