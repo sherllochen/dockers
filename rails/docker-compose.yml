@@ -39,6 +39,7 @@ services:
       - WEB_CONCURRENCY=1
       - HISTFILE=/app/log/.bash_history
       - EDITOR=vim
+      - BUNDLE_GEMFILE=./Gemfile
     depends_on:
       # comment out when not using MySQL
       - mysql
