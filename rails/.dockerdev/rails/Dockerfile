@@ -3,7 +3,6 @@ FROM ruby:$RUBY_VERSION
 ARG RAILS_VERSION
 ARG PG_MAJOR=11
 ARG NODE_MAJOR
-ARG YARN_VERSION
 ARG WORKDIR
 
 # Change source to aliyun, can remove if you want
@@ -34,7 +33,7 @@ RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrad
     postgresql-client-$PG_MAJOR \
     default-mysql-client default-libmysqlclient-dev \
     nodejs sudo\
-    yarn=$YARN_VERSION-1 \
+    yarn \
     $(cat /tmp/Aptfile | xargs) && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \

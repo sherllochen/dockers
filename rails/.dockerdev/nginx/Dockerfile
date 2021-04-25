@@ -2,7 +2,6 @@ ARG RUBY_VERSION
 FROM ruby:$RUBY_VERSION
 ARG NODE_MAJOR
 ARG BUNDLER_VERSION
-ARG YARN_VERSION
 ARG WORKDIR
 
 # Change source to aliyun, can remove if you want
@@ -25,7 +24,7 @@ RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrad
   DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
     build-essential \
     nodejs \
-    yarn=$YARN_VERSION-1 \
+    yarn \
     $(cat /tmp/Aptfile | xargs) && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \

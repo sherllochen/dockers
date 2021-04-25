@@ -12,22 +12,27 @@
 - Nginx
 
 ## For running development
-1. Copy all files in base_dockerdev to app root directory.
+1. Copy all files in root directory to app root directory.
 2. Change args for dependency version in docker-compose.yml if need.
 3. Default db dependency is MySQL, can be change to Postgres. The Postgres service has been included. 
 4. Any volumes would be mounted in container must be created.
 5. Database name, username and password is defined in docker-compose.yml. The config in config/database.yml must be the same.
-5. Execute for first time or whenever dockerfile changed
+6. When there is not rails existed, u need to comment out two lines below in .dockerdev/rails/Dockerfile. If there is rails 
+```
+COPY Gemfile Gemfile.lock $WORKDIR/
+COPY package.json yarn.lock $WORKDIR/
+```   
+7. Execute for first time or whenever dockerfile changed
 ```bash
 sudo docker-compose build
 ```
-6. Run service, rails service will be exposed in 3000.
+7. Run service, rails service will be exposed in 3000.
 
 ```bash
 sudo docker-compose run --service-ports dev
 ```
 
-7. Db setup
+8. Db setup
 
 ```bash
 # get dev container id, its container name is just list xxx_dev_run_xxx
