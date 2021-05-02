@@ -36,9 +36,9 @@ sudo docker-compose run --service-ports dev
 
 ```bash
 # get dev container id, its container name is just list xxx_dev_run_xxx
-sudo docker-compose container ps
+sudo docker ps -qf "name=^containername$"
 # attach to dev container
-sudo docker exec -it dev-container-id /bin/bash
+sudo docker exec -it $(dps -qf "name=containername$") /bin/bash
 bundle exec rake db:setup
 bundle exec rake db:migrate
 bundle exec rake db:seed_fu

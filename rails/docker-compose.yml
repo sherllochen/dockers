@@ -6,13 +6,13 @@ services:
       context: .
       dockerfile: ./.dockerdev/rails/Dockerfile
       args:
-        RUBY_VERSION: '2.6.6'
-        RAILS_VERSION: '5.2.0'
+        RUBY_VERSION: '2.7.3'
+        RAILS_VERSION: '5.2.5'
         PG_MAJOR: '11'
-        NODE_MAJOR: '12'
+        NODE_MAJOR: '14'
         BUNDLER_VERSION: '2.0.2'
         WORKDIR: '/app'
-    image: sherllo/rails:1.0.0
+    image: sherllo/rails_273_525:1.0.0
     tmpfs:
       - /tmp
 
