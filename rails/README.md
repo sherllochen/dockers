@@ -26,13 +26,13 @@ COPY package.json yarn.lock $WORKDIR/
 ```bash
 sudo docker-compose build
 ```
-7. Run service, rails service will be exposed in 3000.
+8. Run service, rails service will be exposed in 3000.
 
 ```bash
 sudo docker-compose run --service-ports dev
 ```
 
-8. Db setup
+9. Db setup
 
 ```bash
 # get dev container id, its container name is just list xxx_dev_run_xxx
